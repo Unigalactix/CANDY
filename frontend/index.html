@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy Browser Agent</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Space+Mono&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="glass-panel">
+            <div class="logo">
+                <span class="comet-icon">🍬</span>
+                <h1>Candy <span class="highlight">Browser</span></h1>
+            </div>
+            <div class="url-bar-container">
+                <input type="text" id="target-url" placeholder="https://example.com" value="https://example.com" />
+                <button id="run-btn" class="glow-button">
+                    <span class="btn-text">LAUNCH AGENT</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="workspace">
+            <!-- Sidebar: Instructions -->
+            <aside class="sidebar glass-panel">
+                <div class="panel-header">
+                    <h2>Instructions</h2>
+                    <span class="status-indicator" id="status-indicator">Ready</span>
+                </div>
+                <div class="editor-container">
+                    <textarea id="instructions-editor" spellcheck="false" placeholder="Enter commands here...">
+CLICK: #login-button
+TYPE: #username | admin
+WAIT: 2
+SCROLL: 500
+STOP:</textarea>
+                </div>
+                <!-- Logs preview (Mini) -->
+                <div class="logs-container">
+                    <h3>Activity Log</h3>
+                    <div id="log-output" class="log-output"></div>
+                </div>
+            </aside>
+
+            <!-- Preview Area -->
+            <section class="preview-area glass-panel">
+                <div class="panel-header">
+                    <h2>Live Preview</h2>
+                    <div class="live-dot"></div>
+                </div>
+                <div class="browser-viewport">
+                    <img id="live-stream" src="" alt="Waiting for stream..." />
+                    <div class="overlay-message" id="overlay-msg">Agent Setup Required</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

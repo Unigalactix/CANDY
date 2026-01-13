@@ -1,0 +1,18 @@
+OPEN: https://www.linkedin.com/feed/
+# Wait for manual login interaction if needed
+WAIT: 15
+
+# Loop 5 times
+LOOP_START: 5
+    # Scroll down to load posts
+    SCROLL: 800
+    WAIT: 2
+    
+    # Advanced JS: Click the 3rd 'Like' button that is visible
+    # Note: This is an approximation. A robust script would track posts.
+    EXECUTE_JS: (function() { const btns = Array.from(document.querySelectorAll('button[aria-label^="React"]')); if (btns.length >= 3) btns[2].click(); })()
+    
+    WAIT: 2
+LOOP_END
+
+STOP:
