@@ -52,7 +52,7 @@ async def websocket_endpoint(websocket: WebSocket):
         try:
             await websocket.send_json({"type": "log", "data": msg})
         except:
-            pass # Client might be gone
+            pass 
 
     async def send_screenshot(b64_data):
         try:
@@ -60,27 +60,35 @@ async def websocket_endpoint(websocket: WebSocket):
         except:
             pass
 
-    # Pass the GLOBAL browser instance to the agent
     browser = app_state.get("browser")
     if not browser:
         await send_log("CRITICAL ERROR: Global Browser not initialized.")
         await websocket.close()
         return
 
+    # Instantiate Agent and Start Session
     agent = AsyncBrowserAgent(browser, output_callback=send_log, screenshot_callback=send_screenshot)
+    await agent.start_session()
 
     try:
         while True:
             data = await websocket.receive_text()
             message = json.loads(data)
             
-            if message.get("action") == "run":
+            action = message.get("action")
+            
+            if action == "navigate":
+                url = message.get("url")
+                await agent.navigate(url)
+            
+            elif action == "run":
                 instructions = message.get("instructions")
-                await send_log("Agent Request Received.")
-                # Run agent (awaiting direct execution for simplicity)
                 await agent.execute(instructions)
                 
     except WebSocketDisconnect:
         print("Client disconnected")
     except Exception as e:
         print(f"WebSocket Error: {e}")
+    finally:
+        # Cleanup session on disconnect
+        await agent.close()

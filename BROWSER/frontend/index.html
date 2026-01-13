@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy Browser</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Space+Mono&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Browser Header: URL Bar & Controls -->
+        <header class="browser-header glass-panel">
+            <div class="logo">
+                <span class="candy-icon">🍬</span>
+                <span class="brand-text">Candy</span>
+            </div>
+
+            <div class="url-bar-container">
+                <input type="text" id="url-bar" placeholder="Enter URL or search..." />
+                <button id="go-btn" class="icon-btn">➔</button>
+            </div>
+
+            <div class="header-controls">
+                <button id="toggle-agent-btn" class="glow-button small">
+                    <span class="icon">🤖</span> Agent
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="workspace">
+            <!-- Agent Sidebar (Collapsible) -->
+            <aside class="agent-sidebar glass-panel" id="agent-sidebar">
+                <div class="sidebar-header">
+                    <h2>Agent Command</h2>
+                    <span class="status-indicator" id="status-indicator">Ready</span>
+                </div>
+
+                <div class="editor-container">
+                    <textarea id="instructions-editor" spellcheck="false"
+                        placeholder="Enter commands for the current page...">
+CLICK: #login-button
+TYPE: #username | admin
+WAIT: 2
+SCROLL: 500
+STOP:</textarea>
+                </div>
+
+                <button id="run-agent-btn" class="glow-button full-width">
+                    RUN COMMANDS
+                </button>
+
+                <!-- Logs (Mini) -->
+                <div class="logs-container">
+                    <h3>Activity Log</h3>
+                    <div id="log-output" class="log-output"></div>
+                </div>
+            </aside>
+
+            <!-- Browser Preview Area -->
+            <section class="browser-view glass-panel">
+                <div class="preview-overlay" id="overlay-msg">
+                    <div class="welcome-msg">
+                        <h1>Welcome to Candy</h1>
+                        <p>Enter a URL to start browsing.</p>
+                    </div>
+                </div>
+                <img id="live-stream" src="" alt="Browser Stream" />
+                <div class="live-indicator"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

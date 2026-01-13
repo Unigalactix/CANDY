@@ -1,14 +1,18 @@
-const termUrlArgs = document.getElementById('target-url');
+const urlBar = document.getElementById('url-bar');
+const goBtn = document.getElementById('go-btn');
+const toggleAgentBtn = document.getElementById('toggle-agent-btn');
+const sidebar = document.getElementById('agent-sidebar');
+const runAgentBtn = document.getElementById('run-agent-btn');
 const instructionsEditor = document.getElementById('instructions-editor');
-const runBtn = document.getElementById('run-btn');
 const logOutput = document.getElementById('log-output');
 const liveStream = document.getElementById('live-stream');
 const overlayMsg = document.getElementById('overlay-msg');
 const statusIndicator = document.getElementById('status-indicator');
-const liveDot = document.querySelector('.live-dot');
+const liveIndicator = document.querySelector('.live-indicator');
 
 let ws = null;
 
+// --- WebSocket Connection ---
 function connectWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws`;
@@ -16,10 +20,10 @@ function connectWebSocket() {
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-        log("System: Connected to Agent Server");
+        log("System: Connected to Candy Cloud");
         statusIndicator.innerText = "Connected";
         statusIndicator.style.color = "#4ade80"; // Green
-        runBtn.disabled = false;
+        runAgentBtn.disabled = false;
     };
 
     ws.onmessage = (event) => {
@@ -35,8 +39,8 @@ function connectWebSocket() {
         log("System: Disconnected. Retrying...");
         statusIndicator.innerText = "Disconnected";
         statusIndicator.style.color = "#ef4444"; // Red
-        liveDot.classList.remove('active');
-        runBtn.disabled = true;
+        liveIndicator.classList.remove('active');
+        runAgentBtn.disabled = true;
         setTimeout(connectWebSocket, 3000);
     };
 
@@ -45,6 +49,7 @@ function connectWebSocket() {
     };
 }
 
+// --- UI Interaction ---
 function log(message) {
     const line = document.createElement('div');
     line.className = 'log-entry';
@@ -55,39 +60,61 @@ function log(message) {
 
 function updateStream(base64Data) {
     liveStream.src = `data:image/jpeg;base64,${base64Data}`;
-    liveStream.style.display = 'block';
-    overlayMsg.style.display = 'none';
+    document.querySelector('.browser-view').classList.add('active');
 
-    // Animate dot
-    liveDot.classList.add('active');
-
-    // Clear active status after a bit if no data comes
+    liveIndicator.classList.add('active');
     clearTimeout(window.streamTimeout);
     window.streamTimeout = setTimeout(() => {
-        liveDot.classList.remove('active');
+        liveIndicator.classList.remove('active');
     }, 1000);
 }
 
-runBtn.addEventListener('click', () => {
-    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+// Navigation Logic
+function requestNavigation() {
+    let url = urlBar.value.trim();
+    if (!url) return;
 
-    const url = termUrlArgs.value;
-    const instructions = instructionsEditor.value;
-
-    // Prepend OPEN command if not present explicitly or to ensure target
-    // For this simple agent, we might want to just inject the OPEN command at the top
-    let fullInstructions = instructions;
-    if (url) {
-        fullInstructions = `OPEN: ${url}\n` + instructions;
+    if (!url.startsWith('http')) {
+        url = 'https://' + url;
+        urlBar.value = url;
     }
 
-    log("System: Sending instructions...");
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        log(`System: Navigating to ${url}...`);
+        ws.send(JSON.stringify({
+            action: "navigate",
+            url: url
+        }));
+    } else {
+        log("Error: Not connected to agent.");
+    }
+}
+
+urlBar.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') requestNavigation();
+});
+
+goBtn.addEventListener('click', requestNavigation);
+
+// Sidebar Toggle
+toggleAgentBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+    // If opening, focus editor? Optional.
+});
+
+// Agent Execution
+runAgentBtn.addEventListener('click', () => {
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+
+    const instructions = instructionsEditor.value;
+    log("System: Sending Agent Command Batch...");
+
     ws.send(JSON.stringify({
         action: "run",
-        instructions: fullInstructions
+        instructions: instructions
     }));
 });
 
 // Init
-log("System: Initializing Candy Client...");
+log("System: Initializing Candy Browser...");
 connectWebSocket();

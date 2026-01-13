@@ -26,20 +26,46 @@ class AsyncBrowserAgent:
                 b64_img = base64.b64encode(screenshot_bytes).decode('utf-8')
                 await self.screenshot_callback(b64_img)
             except Exception as e:
-                # Common to fail if page closes rapidly or is changing
                 pass
 
-    async def execute(self, instructions_text):
-        await self.log("Initializing Task Context...")
-        
+    async def start_session(self):
+        """Initialize the persistent browser context/page."""
         try:
-            # Create a fresh context for this task
+            await self.log("Starting New Browser Session...")
             self.context = await self.browser.new_context(viewport={'width': 1280, 'height': 800})
             self.page = await self.context.new_page()
+            await self.log("Session Ready.")
+        except Exception as e:
+            await self.log(f"Failed to start session: {e}")
 
-            await self.log("Page Ready.")
+    async def close(self):
+        """Cleanup the session."""
+        if self.context:
+            await self.context.close()
+            await self.log("Session Closed.")
+
+    async def navigate(self, url):
+        """Direct navigation helper."""
+        if not self.page:
+            await self.log("Error: No active session.")
+            return
+
+        try:
+            await self.log(f"Navigating to: {url}")
+            await self.page.goto(url)
             await self.capture_screen()
+        except Exception as e:
+            await self.log(f"Navigation failed: {e}")
 
+    async def execute(self, instructions_text):
+        """Execute a batch of instructions on the CURRENT page."""
+        if not self.page:
+             await self.log("Error: No active session. Please restart.")
+             return
+
+        await self.log("Executing Commands...")
+        
+        try:
             steps = self._parse_instructions(instructions_text)
             
             for step in steps:
@@ -80,10 +106,6 @@ class AsyncBrowserAgent:
                         await self.log(f"Executing JS: {arg}")
                         await self.page.evaluate(arg)
 
-                    elif cmd == "LOOP_START" or cmd == "LOOP_END":
-                        # Handled in parser, shouldn't appear here but safe to ignore
-                        pass
-
                     elif cmd == "STOP":
                         await self.log("Stop condition met.")
                         break
@@ -96,20 +118,13 @@ class AsyncBrowserAgent:
 
                 except Exception as e:
                     await self.log(f"Error executing {cmd}: {e}")
-                    # Don't break, try next step? Or break? usually continue is better for resilience
             
-            await self.log("Task Finished.")
+            await self.log("Command Batch Finished.")
             
         except Exception as e:
             tb = traceback.format_exc()
             await self.log(f"CRITICAL AGENT ERROR:\n{tb}")
-        
-        finally:
-            # Cleanup context
-            if self.context:
-                await self.context.close()
-            # self.browser is global, do NOT close it
-
+    
     def _parse_instructions(self, text):
         steps = []
         lines = text.splitlines()
