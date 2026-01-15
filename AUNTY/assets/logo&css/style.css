@@ -1,0 +1,177 @@
+/* ================================
+   Vanguard Brand Variables
+================================ */
+:root {
+    --vg-primary: #597986;
+    --vg-primary-dark: #577784;
+    --vg-accent: #2e7d8a;
+    --vg-bg: #f5f8fa;
+    --vg-sidebar-bg: #f0f5f9;
+    --vg-border: #627c8d;
+    --vg-text: #292f32;
+    --vg-muted-text: #5f6f78;
+    --vg-success: #5f6f78;
+    --vg-warning: #ed6c02;
+    --vg-error: #c62828;
+}
+
+/* ================================
+   Global Layout
+================================ */
+body {
+    background-color: var(--vg-bg);
+    color: var(--vg-text);
+}
+
+.block-container {
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
+    max-width: 96%;
+}
+
+/* ================================
+   Typography
+================================ */
+h1 {
+    color: var(--vg-primary);
+    font-weight: 600;
+}
+
+h2, h3 {
+    color: var(--vg-primary-dark);
+    font-weight: 500;
+}
+
+p, label, span {
+    color: var(--vg-text);
+    font-size: 0.95rem;
+}
+
+/* ================================
+   Sidebar
+================================ */
+section[data-testid="stSidebar"] {
+    background-color: var(--vg-sidebar-bg);
+    border-right: 1px solid var(--vg-border);
+}
+
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3 {
+    color: var(--vg-primary);
+}
+
+/* ================================
+   Buttons – GLOBAL
+================================ */
+.stButton > button {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 0.55rem 1.1rem;
+    color: #ffffff !important;
+}
+
+/* ================================
+   Process Document Button
+================================ */
+button[kind="secondary"] {
+    background-color: var(--vg-primary) !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+button[kind="secondary"]:hover {
+    background-color: var(--vg-primary-dark) !important;
+    color: #ffffff !important;
+}
+
+button[kind="secondary"]:active,
+button[kind="secondary"]:focus {
+    background-color: var(--vg-primary-dark) !important;
+    color: #ffffff !important;
+}
+
+button[kind="secondary"]:disabled {
+    background-color: var(--vg-primary) !important;
+    color: #ffffff !important;
+    opacity: 1 !important;
+}
+
+/* ================================
+   Sidebar Button – Refresh Document List
+================================ */
+section[data-testid="stSidebar"] .stButton > button {
+    background-color: var(--vg-accent) !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+section[data-testid="stSidebar"] .stButton > button:hover {
+    background-color: var(--vg-primary) !important;
+    color: #ffffff !important;
+}
+
+section[data-testid="stSidebar"] .stButton > button:active,
+section[data-testid="stSidebar"] .stButton > button:focus {
+    background-color: var(--vg-primary-dark) !important;
+    color: #ffffff !important;
+}
+
+/* ================================
+   Alerts & Status
+================================ */
+.stAlert {
+    border-radius: 6px;
+}
+
+.stSuccess {
+    background-color: #e7f3ea;
+    border-left: 4px solid var(--vg-success);
+}
+
+.stWarning {
+    background-color: #fff3e0;
+    border-left: 4px solid var(--vg-warning);
+}
+
+.stError {
+    background-color: #fdecea;
+    border-left: 4px solid var(--vg-error);
+}
+
+/* ================================
+   Inputs & Selects
+================================ */
+div[data-baseweb="select"] {
+    border-radius: 6px;
+}
+
+input, textarea {
+    border-radius: 6px;
+}
+
+/* ================================
+   Divider
+================================ */
+hr {
+    border: none;
+    border-top: 1px solid var(--vg-border);
+    margin: 1.5rem 0;
+}
+
+/* ================================
+   Header Logo Alignment (MORE DOWN)
+================================ */
+div[data-testid="column"]:first-child img {
+    margin-top: 30px;
+}
+
+/* ================================
+   Footer
+================================ */
+.vanguard-footer {
+    text-align: center;
+    color: var(--vg-muted-text);
+    font-size: 0.85rem;
+    padding: 1rem 0;
+}

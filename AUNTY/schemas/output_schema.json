@@ -1,0 +1,200 @@
+{
+  "document_metadata": {
+    "company_name": "String",
+    "company_address": "String",
+    "insured_details": {
+      "name": "String or null",
+      "Home": "String or null",
+      "Property": "String or null",
+      "home_phone": "String or null",
+      "E-mail": "String or null"
+    },
+    "claim_rep_details": {
+      "name": "String or null",
+      "Position": "String or null",
+      "Company": "String or null",
+      "business_address": "String or null",
+      "business_phone": "String or null",
+      "E-mail": "String or null"
+    },
+    "estimator_details": {
+      "name": "String",
+      "Position": "String or null",
+      "Company": "String or null",
+      "business_address": "String or null",
+      "business_phone": "String or null",
+      "E-mail": "String or null"
+    },
+    "reference_details": {
+      "name": "String",
+      "position": "String or null",
+      "company": "String or null",
+      "business_phone": "String or null",
+      "Business_Address": "String or null"
+    },
+    "dates and Claim Information": {
+      "Claim Number": "String or null",
+      "Policy Number": "String or null",
+      "Type of Loss": "String or null",
+      "date_contacted": "MM-DD-YYYY or null",
+      "date_of_loss": "MM-DD-YYYY or null",
+      "date_inspected": "MM-DD-YYYY or null",
+      "Date Est. Completed": "MM-DD-YYYY or null",
+      "date_received": "MM-DD-YYYY or null",
+      "date_entered": "MM-DD-YYYY or null"
+    },
+    "price_list": "String or null",
+    "estimate_id": "String or null"
+  },
+  "validation_summary": {
+    "total_rules_checked": "Number",
+    "critical_flags": "Number",
+    "status": "String"
+  },
+  "rooms": [
+    {
+      "id": "String",
+      "name": "String (e.g., Bathroom, Kitchen)",
+      "grouping": "String or null (e.g., Main Level, 2nd Floor)",
+      "dimensions": {
+        "floor_area_sf": "Number or null",
+        "flooring_sy": "Number or null",
+        "wall_area_sf": "Number or null",
+        "ceiling_area_sf": "Number or null",
+        "walls_and_ceiling_sf": "Number or null",
+        "floor_perimeter_lf": "Number or null",
+        "ceiling_perimeter_lf": "Number or null",
+        "Height": "Number or null"
+      },
+      "line_items": [
+        {
+          "line_num": "Number or null",
+          "subcategory_group": "String or null (e.g. 'floor', 'walls', 'ceilings', etc.)",
+          "description": "String",
+          "quantity": "Number",
+          "unit": "String",
+          "unit_price": "Number or null",
+          "tax": "Number or null",
+          "overhead_profit": "Number or null",
+          "total_rcv": "Number or null",
+          "depreciation": "String (preserve exact formatting, e.g. '<31.46>') or null",
+          "acv": "Number or null",
+          "variance": "Number or null",
+          "notes": "String or null"
+        }
+      ],
+      "sub_areas": [
+        {
+          "name": "String (e.g., Closet, Toilet Room, Alcove)",
+          "dimensions": {
+            "floor_area_sf": "Number or null",
+            "flooring_sy": "Number or null",
+            "wall_area_sf": "Number or null",
+            "ceiling_area_sf": "Number or null",
+            "walls_and_ceiling_sf": "Number or null",
+            "floor_perimeter_lf": "Number or null",
+            "ceiling_perimeter_lf": "Number or null",
+            "Height": "Number or null"
+          },
+          "line_items": [
+            {
+              "line_num": "Number or null",
+              "description": "String",
+              "quantity": "Number",
+              "unit": "String",
+              "total_rcv": "Number or null"
+            }
+          ],
+          "architectural_features": [
+            {
+              "feature_type": "String (e.g. Door, Window, Missing Wall)",
+              "dimensions_raw": "String (e.g. 5' 11 15/16\" X 6' 9 7/8\")",
+              "action_description": "String (e.g. Opens into Exterior)"
+            }
+          ]
+        }
+      ],
+      "architectural_features": [
+        {
+          "feature_type": "String (e.g. Door, Window, Missing Wall)",
+          "dimensions_raw": "String (e.g. 5' 11 15/16\" X 6' 9 7/8\")",
+          "action_description": "String (e.g. Opens into Exterior)"
+        }
+      ],
+      "rule_validations": [
+        {
+          "rule": "String",
+          "status": "PASSED | FLAGGED",
+          "details": "String",
+          "severity": "String or null"
+        }
+      ]
+    }
+  ],
+  "grand_total_areas": {
+    "walls_sf": "Number or null",
+    "floor_sf": "Number or null",
+    "ceiling_sf": "Number or null",
+    "walls_and_ceiling_sf": "Number or null",
+    "flooring_sy": "Number or null",
+    "long_wall_sf": "Number or null",
+    "short_wall_sf": "Number or null",
+    "exterior_wall_area_sf": "Number or null",
+    "interior_wall_area_sf": "Number or null",
+    "total_area_sf": "Number or null",
+    "floor_perimeter_lf": "Number or null",
+    "ceil_perimeter_lf": "Number or null",
+    "exterior_perimeter_of_walls_lf": "Number or null",
+    "surface_area_sf": "Number or null",
+    "total_ridge_length_lf": "Number or null",
+    "total_hip_length_lf": "Number or null",
+    "number_of_squares": "Number or null"
+  },
+  "summary_for_dwelling": {
+    "Line Item Total": "Number or null",
+    "Material Sales Tax": "Number or null",
+    "Storage Tax": "Number or null",
+    "Subtotal": "Number or null",
+    "Overhead": "Number or null",
+    "Profit": "Number or null",
+    "Replacement Cost Value": "Number or null",
+    "Less Depreciation": "Number or null",
+    "Actual Cash Value": "Number or null",
+    "Less Deductible": "Number or null",
+    "Net claim": "Number or null",
+    "Total Recoverable Depreciation": "Number or null",
+    "Net Claim if depreciation is recovered": "Number or null",
+    "Total Recoverable Value": "Number or null"
+  },
+  "Recap of Taxes Overhead and Profit": [
+    {
+      "description": "String",
+      "amount": "Number or null"
+    }
+  ],
+  "Recap by Room": [
+    {
+      "room_name": "String",
+      "total": "Number or null",
+      "percentage": "String or Number or null"
+    }
+  ],
+  "recap_by_category": [
+    {
+      "category": "String (e.g. 'Drywall', 'Cleaning' or 'Permits')",
+      "section_type": "String (e.g. 'O&P Items', 'Non-O&P Items')",
+      "rcv": "Number or null",
+      "depreciation": "Number or null",
+      "acv": "Number or null",
+      "Total": "Number or null"
+    }
+  ],
+  "review_findings": [
+    {
+      "finding_type": "String or null",
+      "description": "String or null",
+      "area_name": "String or null",
+      "variance_amount": "Number or null"
+    }
+  ]
+}
