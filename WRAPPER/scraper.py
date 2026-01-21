@@ -7,6 +7,73 @@ from playwright.async_api import async_playwright
 from bs4 import BeautifulSoup
 import re
 from rapidfuzz import fuzz
+from openai import OpenAI
+
+async def query_local_llm(results, keyword, base_url, model_name):
+    """
+    Sends scraped results to a local LLM for summarization/insights.
+    Handles large context by chunking results and summarizing iteratively.
+    """
+    print(f"\n[+] Connecting to Local LLM at {base_url} (Model: {model_name})...")
+    
+    try:
+        client = OpenAI(
+            base_url=base_url,
+            api_key="docker"
+        )
+        
+        # 1. Truncate text to avoid massive single tokens
+        cleaned_results = []
+        for res in results:
+            text = res['text'][:1000] # Truncate to 1k chars
+            if len(res['text']) > 1000:
+                text += "...(truncated)"
+            cleaned_results.append(f"{text} (Link: {res['link']})")
+
+        # 2. Chunking logic
+        batch_size = 5
+        chunks = [cleaned_results[i:i + batch_size] for i in range(0, len(cleaned_results), batch_size)]
+        
+        partial_summaries = []
+        
+        print(f"[*] Processing {len(cleaned_results)} items in {len(chunks)} batch(es)...")
+
+        for i, chunk in enumerate(chunks, 1):
+            context_text = "\n".join([f"- {item}" for item in chunk])
+            
+            prompt = (
+                f"You are a helpful research assistant. I have scraped some data from a website regarding '{keyword}'.\n"
+                f"Here is a batch of findings (Batch {i}/{len(chunks)}):\n\n"
+                f"{context_text}\n\n"
+                f"Please provide a concise summary of what was found in this specific batch regarding '{keyword}'. "
+                f"Focus on extracting key facts."
+            )
+
+            try:
+                print(f"    - Sending Batch {i}...")
+                response = client.chat.completions.create(
+                    model=model_name,
+                    messages=[
+                        {"role": "system", "content": "You are a helpful assistant."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.7,
+                )
+                summary = response.choices[0].message.content
+                partial_summaries.append(f"[Batch {i} Summary]:\n{summary}")
+            except Exception as e:
+                partial_summaries.append(f"[Batch {i} Error]: {str(e)}")
+
+        # 3. Stitch results
+        final_output = "\n\n".join(partial_summaries)
+        
+        # optional: If strictly needed, we could run a final summarization over `final_output` 
+        # but simpler is usually better for "stitching".
+        
+        return final_output
+
+    except Exception as e:
+        return f"Error communicating with Local LLM: {str(e)}"
 
 async def scrape_keyword(url, keyword):
     # Setup Output
@@ -18,6 +85,7 @@ async def scrape_keyword(url, keyword):
     run_dir = os.path.join(base_output_dir, run_dir_name)
     os.makedirs(run_dir, exist_ok=True)
     output_file_path = os.path.join(run_dir, "results.txt")
+    llm_output_path = os.path.join(run_dir, "llm_summary.txt") # New output file
 
     print(f"\n[+] Launching Scraper (Fuzzy + Links)...")
     print(f"[+] URL: {url}")
@@ -124,6 +192,31 @@ async def scrape_keyword(url, keyword):
                         pass
             
             print(f"\n[=] Results saved to: {output_file_path}\n")
+
+            # --- LLM Integration ---
+            if results:
+                use_llm = input("Do you want to analyze these results with your Local LLM? (y/n): ").lower().strip()
+                if use_llm == 'y':
+                    # Default Settings
+                    default_url = "http://localhost:11434/engines/v1"
+                    default_model = "llama3.2"
+                    
+                    # Prompt user or accept defaults
+                    llm_url = input(f"Enter Local LLM URL (default: {default_url}): ").strip() or default_url
+                    llm_model = input(f"Enter Model Name (default: {default_model}): ").strip() or default_model
+                    
+                    print("[*] Sending data to Local LLM...")
+                    summary = await query_local_llm(results, keyword, llm_url, llm_model)
+                    
+                    print("\n--- LLM Summary ---\n")
+                    print(summary)
+                    print("\n-------------------\n")
+                    
+                    # Save summary
+                    with open(llm_output_path, "w", encoding="utf-8") as f:
+                        f.write(f"LLM Analysis (Model: {llm_model})\nTime: {timestamp}\n{'-'*40}\n\n")
+                        f.write(summary)
+                    print(f"[=] LLM Summary saved to: {llm_output_path}")
 
         except Exception as e:
             print(f"[-] Error: {e}")
