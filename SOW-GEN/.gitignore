@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment Variables
+.env
+
+# Streamlit
+.streamlit/
+
+# Temporary Files
+temp_template.pdf
+*.tmp
