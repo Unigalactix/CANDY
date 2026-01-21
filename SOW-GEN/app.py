@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 from dotenv import load_dotenv
-from sow_generator import generate_sow_content, generate_pdf_from_html, extract_text_from_pdf
+from sow_generator import generate_sow_draft, format_sow_to_html, generate_pdf_from_html
 
 # Load env vars
 load_dotenv()
@@ -9,7 +9,7 @@ load_dotenv()
 st.set_page_config(page_title="SOW Generator", layout="wide")
 
 st.title("📄 Statement of Work (SOW) Generator")
-st.markdown("Generate a professional SOW PDF from your Meeting Minutes using a PDF Template.")
+st.markdown("Generate a professional SOW PDF: **Draft -> Edit -> Publish**")
 
 # Sidebar Settings
 st.sidebar.header("Configuration")
@@ -19,58 +19,89 @@ default_model = os.getenv("LLM_MODEL", "llama3.2")
 llm_url = st.sidebar.text_input("LLM Base URL", value=default_url)
 llm_model = st.sidebar.text_input("Model Name", value=default_model)
 
-# Main Layout
-col1, col2 = st.columns(2)
+# Template
+template_path = "SOW-TEMPLATE.pdf"
+if os.path.exists(template_path):
+    st.sidebar.success(f"Template: {template_path}")
+else:
+    st.sidebar.error(f"⚠️ Template '{template_path}' missing!")
 
-with col1:
-    st.header("1. Inputs")
-    
-    # Template
-    template_path = "SOW-TEMPLATE.pdf"
-    if os.path.exists(template_path):
-        st.success(f"Using Default Template: {template_path}")
-    else:
-        st.error(f"⚠️ Default template '{template_path}' not found! Please place it in the folder.")
+# Session State Initialization
+if 'step' not in st.session_state:
+    st.session_state.step = 1
+if 'draft_text' not in st.session_state:
+    st.session_state.draft_text = ""
+if 'pdf_bytes' not in st.session_state:
+    st.session_state.pdf_bytes = None
 
-
-    # MOM Input
-    st.subheader("Minutes of Meeting (MOM)")
+# --- STEP 1: INPUT MOM ---
+if st.session_state.step == 1:
+    st.header("Step 1: Input Meeting Minutes")
     mom_text = st.text_area("Paste MOM details here:", height=300)
-
-with col2:
-    st.header("2. Generate")
     
-    generate_btn = st.button("🚀 Generate SOW PDF", type="primary")
-    
-    if generate_btn:
+    if st.button("Generate Draft", type="primary"):
         if not mom_text:
             st.error("Please provide Meeting Minutes.")
-        elif not os.path.exists(template_path):
-            st.error("Template PDF is missing.")
         else:
-            with st.spinner("Analyzing Template and Generating Content via Local LLM..."):
+            with st.spinner("Analyzing MOM and Generating Draft..."):
                 try:
-                    # Generate Content
-                    html_content = generate_sow_content(mom_text, template_path, llm_url, llm_model)
-                    
-                    # Convert to PDF
-                    pdf_bytes = generate_pdf_from_html(html_content)
-                    
-                    st.success("SOW Generated Successfully!")
-                    
-                    # Preview (HTML)
-                    with st.expander("Preview Generated Content (HTML)"):
-                        st.markdown(html_content, unsafe_allow_html=True)
-                    
-                    # Download Button
-                    st.download_button(
-                        label="📥 Download SOW.pdf",
-                        data=pdf_bytes,
-                        file_name="sow.pdf",
-                        mime="application/pdf"
-                    )
-                    
+                    draft = generate_sow_draft(mom_text, llm_url, llm_model)
+                    st.session_state.draft_text = draft
+                    st.session_state.step = 2
+                    st.rerun()
                 except Exception as e:
-                    st.error(f"An error occurred: {str(e)}")
+                    st.error(f"Error: {e}")
+
+# --- STEP 2: EDIT DRAFT ---
+elif st.session_state.step == 2:
+    st.header("Step 2: Review & Edit Draft")
+    st.info("Edit the extracted content below before generating the final PDF.")
+    
+    # Text Area for Editing
+    edited_text = st.text_area("SOW Draft (Markdown)", value=st.session_state.draft_text, height=600)
+    
+    col1, col2 = st.columns([1, 4])
+    with col1:
+        if st.button("⬅️ Back"):
+            st.session_state.step = 1
+            st.rerun()
+    with col2:
+        if st.button("Generate Final PDF 🚀", type="primary"):
+            if not os.path.exists(template_path):
+                st.error("Template PDF is missing.")
+            else:
+                st.session_state.draft_text = edited_text # Save edits
+                with st.spinner("Applying Template Formatting..."):
+                    try:
+                        html_content = format_sow_to_html(edited_text, template_path, llm_url, llm_model)
+                        pdf_bytes = generate_pdf_from_html(html_content)
+                        st.session_state.pdf_bytes = pdf_bytes
+                        st.session_state.html_preview = html_content
+                        st.session_state.step = 3
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+
+# --- STEP 3: DOWNLOAD ---
+elif st.session_state.step == 3:
+    st.header("Step 3: Download SOW")
+    st.success("SOW Generated Successfully!")
+    
+    # Download Button
+    st.download_button(
+        label="📥 Download SOW.pdf",
+        data=st.session_state.pdf_bytes,
+        file_name="sow.pdf",
+        mime="application/pdf"
+    )
+    
+    with st.expander("Preview Final HTML"):
+        st.markdown(st.session_state.html_preview, unsafe_allow_html=True)
+    
+    if st.button("Start Over"):
+        st.session_state.step = 1
+        st.session_state.draft_text = ""
+        st.session_state.pdf_bytes = None
+        st.rerun()
 
  

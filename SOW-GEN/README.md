@@ -33,3 +33,19 @@ python -m streamlit run app.py
 ```
 
 Paste your **Minutes of Meeting (MOM)** into the text area and click **Generate**.
+
+## Workflow
+
+```mermaid
+graph TD
+    A(["User Opens App"]) --> B[/"Input Meeting Minutes"/]
+    B --> C{"Click 'Generate Draft'"}
+    C -->|Batch Processing| D["LLM: Extract & Draft Content"]
+    D --> E[/"Display Editable Draft"/]
+    E --> F{"User Reviews"}
+    F -- "Edits Text" --> E
+    F -- "Clicks 'Generate Final PDF'" --> G["LLM: Merge Draft + Template Style"]
+    G --> H["Convert HTML to PDF"]
+    H --> I(["Download Final SOW"])
+```
+

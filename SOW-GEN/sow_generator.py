@@ -25,20 +25,17 @@ def generate_pdf_from_html(html_content):
     pisa.CreatePDF(BytesIO(html_content.encode('utf-8')), result)
     return result.getvalue()
 
-def generate_sow_content(mom_text, template_pdf_path, base_url="http://localhost:11434/engines/v1", model="llama3.2", api_key=None):
+
+def generate_sow_draft(mom_text, base_url="http://localhost:11434/engines/v1", model="llama3.2", api_key=None):
     """
-    Generates SOW content by reading a PDF template structure and filling it with MOM details via LLM.
-    Returns: Markdown/HTML text ready for PDF conversion.
+    Generates a text/markdown draft of the SOW from MOM details.
+    Returns: Markdown text string.
     """
-    # 1. Extract Template Text
-    print(f"\n[+] Reading Template from {template_pdf_path}...")
-    template_text = extract_text_from_pdf(template_pdf_path)
-    
     # Resolving API Key
     if not api_key:
         api_key = os.getenv("LLM_API_KEY", "sow-gen")
 
-    # 2. Connect to LLM
+    # Connect to LLM
     print(f"[+] Connecting to Local LLM at {base_url}...")
     client = OpenAI(
         base_url=base_url,
@@ -76,8 +73,8 @@ def generate_sow_content(mom_text, template_pdf_path, base_url="http://localhost
     else:
         consolidated_info = mom_text
 
-    # --- Final Generation ---
-    print("[+] Generating Final SOW...")
+    # --- Draft Generation ---
+    print("[+] Generating SOW Draft...")
     
     system_prompt = "You are a professional Project Manager and Technical Writer."
     user_prompt = (
@@ -85,15 +82,11 @@ def generate_sow_content(mom_text, template_pdf_path, base_url="http://localhost
         f"---------------------\n"
         f"{consolidated_info}\n"
         f"---------------------\n\n"
-        f"And I have the TEXT extracted from a previous SOW PDF Template:\n"
-        f"---------------------\n"
-        f"{template_text}\n"
-        f"---------------------\n\n"
         f"Instructions:\n"
-        f"1. Create a NEW Statement of Work (SOW) based on the **structure** and **style** of the Template, but filled with the Project Details provided.\n"
-        f"2. Use HTML formatting for the output (e.g., <h1>, <h2>, <p>, <ul>, <li>).\n"
-        f"3. Ensure it looks professional.\n"
-        f"4. Output ONLY the HTML content. Do NOT include markdown code blocks (```html)."
+        f"1. Create a detailed Statement of Work (SOW) draft.\n"
+        f"2. Use Markdown formatting (## Headers, - Bullet points).\n"
+        f"3. Include standard SOW sections: Project Overview, Scope of Work, Deliverables, Timeline, Pricing/Budget, Governance/Team.\n"
+        f"4. Do NOT use HTML tags yet. Just structure the content clearly.\n"
     )
     
     try:
@@ -106,9 +99,55 @@ def generate_sow_content(mom_text, template_pdf_path, base_url="http://localhost
             temperature=0.3,
         )
         content = response.choices[0].message.content
-        # Strip markdown code blocks if LLM adds them despite instructions
-        content = content.replace("```html", "").replace("```", "").strip()
         return content
         
     except Exception as e:
-        return f"<h3>Error Generating SOW</h3><p>{str(e)}</p>"
+        return f"Error Generating SOW Draft: {str(e)}"
+
+def format_sow_to_html(edited_text, template_pdf_path, base_url="http://localhost:11434/engines/v1", model="llama3.2", api_key=None):
+    """
+    Takes the edited SOW text and wraps it in the HTML structure of the template PDF.
+    """
+    if not api_key:
+        api_key = os.getenv("LLM_API_KEY", "sow-gen")
+    
+    client = OpenAI(base_url=base_url, api_key=api_key)
+    
+    # 1. Extract Template Text
+    print(f"\n[+] Reading Template from {template_pdf_path}...")
+    template_text = extract_text_from_pdf(template_pdf_path)
+    
+    # 2. Generate HTML
+    print("[+] Applying Template Formatting...")
+    
+    system_prompt = "You are a specialized document formatter."
+    user_prompt = (
+        f"I have the final SOW Content (Markdown):\n"
+        f"---------------------\n"
+        f"{edited_text}\n"
+        f"---------------------\n\n"
+        f"And the Style/Structure extracted from a Reference PDF via OCR/Text Extraction:\n"
+        f"---------------------\n"
+        f"{template_text}\n"
+        f"---------------------\n\n"
+        f"Instructions:\n"
+        f"1. Convert the 'SOW Content' into an HTML document.\n"
+        f"2. Mimic the structure and specific standard clauses found in the 'Reference PDF' where applicable, but keep the specific project details from 'SOW Content'.\n"
+        f"3. Use HTML tags (<h1>, <p>, <ul> etc.).\n"
+        f"4. Output ONLY the valid HTML. Do not include markdown code blocks.\n"
+    )
+    
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.1, # Low temp for strict formatting
+        )
+        content = response.choices[0].message.content
+        content = content.replace("```html", "").replace("```", "").strip()
+        return content
+    except Exception as e:
+        return f"<h3>Error Formatting SOW</h3><p>{str(e)}</p>"
