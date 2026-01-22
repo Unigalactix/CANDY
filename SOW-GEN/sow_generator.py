@@ -1,5 +1,5 @@
 import os
-from openai import OpenAI
+from openai import OpenAI, AzureOpenAI
 from pypdf import PdfReader
 from xhtml2pdf import pisa
 from io import BytesIO
@@ -17,37 +17,191 @@ def extract_text_from_pdf(pdf_path):
     except Exception as e:
         return f"Error reading PDF template: {str(e)}"
 
-def generate_pdf_from_html(html_content):
+from pypdf import PdfReader, PdfWriter, PageObject, Transformation
+from docx import Document
+
+def generate_merged_pdf(html_content, template_path):
     """
-    Converts HTML string to PDF bytes.
+    Generates a PDF from HTML and overlays it onto the template PDF.
+    Preserves formatting/logos of the template.
     """
-    result = BytesIO()
-    pisa.CreatePDF(BytesIO(html_content.encode('utf-8')), result)
-    return result.getvalue()
+    # 1. Generate Content PDF (Transparent Background)
+    # Inject CSS for transparency if not present
+    if "@page" not in html_content:
+        html_content = f"""
+        <style>
+            @page {{
+                background-color: transparent;
+                margin-top: 4cm; /* Adjust based on template header size */
+                margin-bottom: 2cm; /* Adjust based on template footer size */
+                margin-left: 2cm;
+                margin-right: 2cm;
+            }}
+        </style>
+        {html_content}
+        """
+    
+    content_pdf_buffer = BytesIO()
+    pisa.CreatePDF(BytesIO(html_content.encode('utf-8')), content_pdf_buffer)
+    content_pdf_buffer.seek(0)
+    
+    # 2. Merge with Template
+    try:
+        template_reader = PdfReader(template_path)
+        content_reader = PdfReader(content_pdf_buffer)
+        writer = PdfWriter()
+        
+        # Iterate through content pages
+        for i, content_page in enumerate(content_reader.pages):
+            # Get corresponding template page (loop if content > template)
+            template_page_idx = i % len(template_reader.pages)
+            template_page = template_reader.pages[template_page_idx]
+            
+            # Create a blank page with template dimensions
+            output_page = PageObject.create_blank_page(
+                width=template_page.mediabox.width,
+                height=template_page.mediabox.height
+            )
+            
+            # Merge Template (Background)
+            output_page.merge_page(template_page)
+            
+            # Merge Content (Foreground)
+            output_page.merge_page(content_page)
+            
+            writer.add_page(output_page)
+            
+        result = BytesIO()
+        writer.write(result)
+        return result.getvalue()
+        
+    except Exception as e:
+        print(f"Error merging PDF: {e}")
+        # Fallback to simple PDF if merge fails
+        return content_pdf_buffer.getvalue()
+
+from pypdf import PdfReader, PdfWriter, PageObject, Transformation
+from docx import Document
+import tempfile
+import pythoncom
+from docx2pdf import convert
+
+def generate_merged_pdf(html_content, template_path):
+    # ... (Overlay Logic - Keeping this if needed for fallback, but user prefers DOCX template) ...
+    # Simplified for readability in this context, assuming we rely on DOCX conversion now.
+    pass
+
+def generate_sow_doc_struct(sow_content, template_path):
+    """
+    Appends the SOW content to the DOCX template and returns the Document object.
+    """
+    try:
+        doc = Document(template_path)
+        doc.add_page_break()
+        
+        lines = sow_content.split('\n')
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            if line.startswith('## '):
+                doc.add_heading(line.replace('## ', ''), level=2)
+            elif line.startswith('# '):
+                doc.add_heading(line.replace('# ', ''), level=1)
+            elif line.startswith('- '):
+                # Try 'List Bullet' first, fallback to 'List Paragraph', then plain
+                text = line.replace('- ', '')
+                try:
+                    doc.add_paragraph(text, style='List Bullet')
+                except:
+                    try:
+                        doc.add_paragraph(text, style='List Paragraph')
+                    except:
+                        doc.add_paragraph(f"• {text}") # Manual bullet
+            else:
+                doc.add_paragraph(line)
+        return doc
+    except Exception as e:
+        raise ValueError(f"Error structuring DOCX: {e}")
+
+def generate_sow_docx_bytes(sow_content, template_path):
+    """Generates DOCX bytes."""
+    doc = generate_sow_doc_struct(sow_content, template_path)
+    buffer = BytesIO()
+    doc.save(buffer)
+    return buffer.getvalue()
+
+def convert_docx_to_pdf_bytes(doc_bytes):
+    """
+    Converts DOCX bytes to PDF bytes using docx2pdf (requires Word).
+    """
+    try:
+        # Initialize COM for Streamlit thread
+        pythoncom.CoInitialize()
+        
+        with tempfile.NamedTemporaryFile(suffix=".docx", delete=False) as tmp_docx:
+            tmp_docx.write(doc_bytes)
+            docx_path = tmp_docx.name
+            
+        pdf_path = docx_path.replace(".docx", ".pdf")
+        
+        try:
+            convert(docx_path, pdf_path)
+            with open(pdf_path, "rb") as f:
+                pdf_bytes = f.read()
+            return pdf_bytes
+        finally:
+            # Cleanup
+            if os.path.exists(docx_path):
+                os.remove(docx_path)
+            if os.path.exists(pdf_path):
+                os.remove(pdf_path)
+                
+    except Exception as e:
+        raise ValueError(f"PDF Conversion Failed (Ensure Word is installed): {e}")
+    finally:
+        pythoncom.CoUninitialize()
 
 
-def generate_sow_draft(mom_text, base_url=None, model=None, api_key=None):
+def get_llm_client():
+    """
+    Returns the appropriate OpenAI or AzureOpenAI client based on .env configuration.
+    """
+    azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    azure_api_key = os.getenv("AZURE_OPENAI_API_KEY")
+    azure_api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+    
+    if azure_endpoint and azure_api_key:
+        print(f"[+] Connecting to Azure OpenAI at {azure_endpoint}...")
+        return AzureOpenAI(
+            azure_endpoint=azure_endpoint,
+            api_key=azure_api_key,
+            api_version=azure_api_version
+        ), os.getenv("AZURE_OPENAI_DEPLOYMENT")
+    
+    base_url = os.getenv("LLM_BASE_URL")
+    api_key = os.getenv("LLM_API_KEY")
+    model = os.getenv("LLM_MODEL")
+    
+    if base_url and api_key and model:
+        print(f"[+] Connecting to Local/Standard LLM at {base_url}...")
+        return OpenAI(
+            base_url=base_url,
+            api_key=api_key
+        ), model
+        
+    raise ValueError("Missing LLM configuration. Check .env variables.")
+
+def generate_sow_draft(mom_text):
     """
     Generates a text/markdown draft of the SOW from MOM details.
     Returns: Markdown text string.
     """
-    # Resolving Configuration
-    if not base_url:
-        base_url = os.getenv("LLM_BASE_URL")
-    if not model:
-        model = os.getenv("LLM_MODEL")
-    if not api_key:
-        api_key = os.getenv("LLM_API_KEY")
-        
-    if not all([base_url, model, api_key]):
-        raise ValueError("Missing LLM configuration. Ensure LLM_BASE_URL, LLM_MODEL, and LLM_API_KEY are set in .env")
-
-    # Connect to LLM
-    print(f"[+] Connecting to Local LLM at {base_url}...")
-    client = OpenAI(
-        base_url=base_url,
-        api_key=api_key
-    )
+    try:
+        client, model = get_llm_client()
+    except ValueError as e:
+        return str(e)
 
     # --- Processing Logic for Large Inputs ---
     
@@ -111,21 +265,14 @@ def generate_sow_draft(mom_text, base_url=None, model=None, api_key=None):
     except Exception as e:
         return f"Error Generating SOW Draft: {str(e)}"
 
-def format_sow_to_html(edited_text, template_pdf_path, base_url=None, model=None, api_key=None):
+def format_sow_to_html(edited_text, template_pdf_path):
     """
     Takes the edited SOW text and wraps it in the HTML structure of the template PDF.
     """
-    if not base_url:
-        base_url = os.getenv("LLM_BASE_URL")
-    if not model:
-        model = os.getenv("LLM_MODEL")
-    if not api_key:
-        api_key = os.getenv("LLM_API_KEY")
-
-    if not all([base_url, model, api_key]):
-        return "<h3>Error: Missing Configuration</h3><p>Ensure LLM env vars are set.</p>"
-    
-    client = OpenAI(base_url=base_url, api_key=api_key)
+    try:
+        client, model = get_llm_client()
+    except ValueError as e:
+        return f"<h3>Error: Missing Configuration</h3><p>{str(e)}</p>"
     
     # 1. Extract Template Text
     print(f"\n[+] Reading Template from {template_pdf_path}...")

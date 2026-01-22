@@ -1,0 +1,264 @@
+{
+    "styles": [
+        "Heading 2",
+        "List Paragraph",
+        "Normal",
+        "Heading 1",
+        "Heading 3",
+        "Body Text"
+    ],
+    "structure": [
+        {
+            "type": "paragraph",
+            "style": "Normal",
+            "text": "Quadrant Technologies"
+        },
+        {
+            "type": "paragraph",
+            "style": "List Paragraph",
+            "text": "{INPUT CUSTOMER LOGO}"
+        },
+        {
+            "type": "paragraph",
+            "style": "List Paragraph",
+            "text": "Microsoft Fabric PoC"
+        },
+        {
+            "type": "paragraph",
+            "style": "List Paragraph",
+            "text": "Statement of Work"
+        },
+        {
+            "type": "paragraph",
+            "style": "Heading 1",
+            "text": "1. Executive Summery"
+        },
+        {
+            "type": "paragraph",
+            "style": "Heading 1",
+            "text": "2. Objectives"
+        },
+        {
+            "type": "paragraph",
+            "style": "Heading 1",
+            "text": "3. Scope of Work"
+        },
+        {
+            "type": "paragraph",
+            "style": "Heading 2",
+            "text": "4. Timeline and Resource Details"
+        },
+        {
+            "type": "paragraph",
+            "style": "Normal",
+            "text": "The duration of the engagement will be 6 weeks for the implementation of the POC."
+        },
+        {
+            "type": "paragraph",
+            "style": "Heading 2",
+            "text": "\u2055 Quadrant remains fully flexible in supporting operational needs, including alignment with U.S.-based working hours when required."
+        },
+        {
+            "type": "paragraph",
+            "style": "Heading 2",
+            "text": "5. Deliverables"
+        },
+        {
+            "type": "paragraph",
+            "style": "Heading 1",
+            "text": "6. RACI Matrix"
+        },
+        {
+            "type": "paragraph",
+            "style": "Heading 1",
+            "text": "7. Assumptions"
+        },
+        {
+            "type": "paragraph",
+            "style": "Heading 1",
+            "text": "Infrastructure and Licensing Requirements"
+        },
+        {
+            "type": "paragraph",
+            "style": "Heading 1",
+            "text": "Roles and Responsibilities"
+        },
+        {
+            "type": "paragraph",
+            "style": "Heading 1",
+            "text": "10. Risks"
+        },
+        {
+            "type": "paragraph",
+            "style": "Heading 1",
+            "text": "11. Success Criteria"
+        },
+        {
+            "type": "paragraph",
+            "style": "Heading 2",
+            "text": "12. Commercial"
+        },
+        {
+            "type": "paragraph",
+            "style": "Heading 1",
+            "text": "13. Signatures"
+        },
+        {
+            "type": "table",
+            "content": [
+                [
+                    ""
+                ]
+            ]
+        },
+        {
+            "type": "table",
+            "content": [
+                [
+                    "S No",
+                    "Activities",
+                    "Wk1",
+                    "Wk2",
+                    "Wk3",
+                    "Wk4",
+                    "Wk5",
+                    "Wk6"
+                ],
+                [
+                    "1",
+                    "Analysis & Design",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                [
+                    "2",
+                    "Implementation & Testing",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                [
+                    "3",
+                    "Data Validation & Testing",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                ],
+                [
+                    "4",
+                    "User Training and Documentation",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                ]
+            ]
+        },
+        {
+            "type": "table",
+            "content": [
+                [
+                    "S No",
+                    "Role",
+                    "Expertise",
+                    "Location"
+                ],
+                [
+                    "1",
+                    "",
+                    "",
+                    ""
+                ],
+                [
+                    "2",
+                    "",
+                    "",
+                    ""
+                ]
+            ]
+        },
+        {
+            "type": "table",
+            "content": [
+                [
+                    "Role",
+                    "Responsibilities"
+                ],
+                [
+                    "",
+                    ""
+                ],
+                [
+                    "",
+                    ""
+                ]
+            ]
+        },
+        {
+            "type": "table",
+            "content": [
+                [
+                    "SOW Effective Date:",
+                    ""
+                ],
+                [
+                    "SOW Expiration Date:",
+                    ""
+                ],
+                [
+                    "No of Weeks (Pilot)",
+                    ""
+                ],
+                [
+                    "Total Cost (USD)",
+                    ""
+                ]
+            ]
+        },
+        {
+            "type": "table",
+            "content": [
+                [
+                    "Foxen",
+                    "Quadrant Technologies Inc."
+                ],
+                [
+                    "",
+                    "5020 148th Ave NE \nSte 250, Redmond, WA 98052"
+                ],
+                [
+                    "Signature: ___________________________________\n(Authorised representative)",
+                    "Signature: ______________________________________\n(Authorised representative)"
+                ],
+                [
+                    "Name:",
+                    "Name:"
+                ],
+                [
+                    "Title:",
+                    "Title:"
+                ],
+                [
+                    "Email:",
+                    "Email: VRContracts@QuadrantTechnologies.com"
+                ],
+                [
+                    "Date:",
+                    "Date:"
+                ]
+            ]
+        }
+    ]
+}

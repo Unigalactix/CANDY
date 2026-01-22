@@ -3,3 +3,5 @@ streamlit
 pypdf
 xhtml2pdf
 python-dotenv
+python-docx
+docx2pdf

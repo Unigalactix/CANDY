@@ -1,4 +1,4 @@
-# SOW-GEN
+# CARAMEL
 
 A Streamlit-based tool to generate **Statement of Work (SOW)** PDFs using a Local LLM.
 
