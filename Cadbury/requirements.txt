@@ -1,3 +1,5 @@
 playwright==1.49.0
-greenlet>=3.1.0
+greenlet
+streamlit
+
 
