@@ -243,7 +243,10 @@ def run_vanguard_simulator():
 
     with sync_playwright() as p:
         try:
-            browser = p.chromium.launch(headless=HEADLESS)
+            browser = p.chromium.launch(
+                headless=HEADLESS, 
+                args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"]
+            )
         except Exception as e:
             # If the browser executable is missing, install it and retry
             if "Executable doesn't exist" in str(e):
@@ -252,7 +255,10 @@ def run_vanguard_simulator():
                 import sys
                 subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=True)
                 print("✅ Browser installed. Retrying launch...")
-                browser = p.chromium.launch(headless=HEADLESS)
+                browser = p.chromium.launch(
+                    headless=HEADLESS,
+                    args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"]
+                )
             else:
                 raise e
 

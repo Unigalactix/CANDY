@@ -11,3 +11,11 @@ libgbm1
 libdrm2
 libxkbcommon0
 libasound2
+libx11-xcb1
+libxcb-dri3-0
+libxss1
+libxtst6
+fonts-liberation
+libappindicator3-1
+xdg-utils
+libcurl4
