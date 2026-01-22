@@ -242,7 +242,19 @@ def run_vanguard_simulator():
     ensure_dir(TRACE_DIR)
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=HEADLESS)
+        try:
+            browser = p.chromium.launch(headless=HEADLESS)
+        except Exception as e:
+            # If the browser executable is missing, install it and retry
+            if "Executable doesn't exist" in str(e):
+                print("⚠️ Playwright browser not found. Installing chromium...")
+                import subprocess
+                import sys
+                subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=True)
+                print("✅ Browser installed. Retrying launch...")
+                browser = p.chromium.launch(headless=HEADLESS)
+            else:
+                raise e
 
         context = browser.new_context()
         if ENABLE_TRACE:
