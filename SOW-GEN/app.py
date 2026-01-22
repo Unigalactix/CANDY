@@ -13,8 +13,13 @@ st.markdown("Generate a professional SOW PDF: **Draft -> Edit -> Publish**")
 
 # Sidebar Settings
 st.sidebar.header("Configuration")
-default_url = os.getenv("LLM_BASE_URL", "http://localhost:11434/engines/v1")
-default_model = os.getenv("LLM_MODEL", "llama3.2")
+default_url = os.getenv("LLM_BASE_URL")
+default_model = os.getenv("LLM_MODEL")
+
+if not default_url or not default_model:
+    st.error("❌ Missing required environment variables! Please check your .env file.")
+    st.info("Variables needed: LLM_BASE_URL, LLM_MODEL")
+    st.stop()
 
 llm_url = st.sidebar.text_input("LLM Base URL", value=default_url)
 llm_model = st.sidebar.text_input("Model Name", value=default_model)

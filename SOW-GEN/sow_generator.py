@@ -26,14 +26,21 @@ def generate_pdf_from_html(html_content):
     return result.getvalue()
 
 
-def generate_sow_draft(mom_text, base_url="http://localhost:11434/engines/v1", model="llama3.2", api_key=None):
+def generate_sow_draft(mom_text, base_url=None, model=None, api_key=None):
     """
     Generates a text/markdown draft of the SOW from MOM details.
     Returns: Markdown text string.
     """
-    # Resolving API Key
+    # Resolving Configuration
+    if not base_url:
+        base_url = os.getenv("LLM_BASE_URL")
+    if not model:
+        model = os.getenv("LLM_MODEL")
     if not api_key:
-        api_key = os.getenv("LLM_API_KEY", "sow-gen")
+        api_key = os.getenv("LLM_API_KEY")
+        
+    if not all([base_url, model, api_key]):
+        raise ValueError("Missing LLM configuration. Ensure LLM_BASE_URL, LLM_MODEL, and LLM_API_KEY are set in .env")
 
     # Connect to LLM
     print(f"[+] Connecting to Local LLM at {base_url}...")
@@ -104,12 +111,19 @@ def generate_sow_draft(mom_text, base_url="http://localhost:11434/engines/v1", m
     except Exception as e:
         return f"Error Generating SOW Draft: {str(e)}"
 
-def format_sow_to_html(edited_text, template_pdf_path, base_url="http://localhost:11434/engines/v1", model="llama3.2", api_key=None):
+def format_sow_to_html(edited_text, template_pdf_path, base_url=None, model=None, api_key=None):
     """
     Takes the edited SOW text and wraps it in the HTML structure of the template PDF.
     """
+    if not base_url:
+        base_url = os.getenv("LLM_BASE_URL")
+    if not model:
+        model = os.getenv("LLM_MODEL")
     if not api_key:
-        api_key = os.getenv("LLM_API_KEY", "sow-gen")
+        api_key = os.getenv("LLM_API_KEY")
+
+    if not all([base_url, model, api_key]):
+        return "<h3>Error: Missing Configuration</h3><p>Ensure LLM env vars are set.</p>"
     
     client = OpenAI(base_url=base_url, api_key=api_key)
     
