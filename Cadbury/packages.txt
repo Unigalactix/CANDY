@@ -19,3 +19,6 @@ fonts-liberation
 libappindicator3-1
 xdg-utils
 libcurl4
+libcups2
+libcairo2
+libpango-1.0-0
